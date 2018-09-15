@@ -9,8 +9,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
@@ -18,7 +21,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 
+import com.example.hboxs.asimpleframework.MyApplication;
 import com.example.hboxs.asimpleframework.R;
+import com.example.hboxs.asimpleframework.component.ActivityComponent;
+import com.example.hboxs.asimpleframework.component.DaggerActivityComponent;
+import com.example.hboxs.asimpleframework.module.ActivityModule;
 import com.example.hboxs.asimpleframework.utils.ToastUtils;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
@@ -52,7 +59,8 @@ public abstract class BaseActivity extends SupportActivity implements BaseView, 
             View rootView = getLayoutInflater().inflate(layoutId, rootLinearLayout, true);
             //rootLinearLayout.removeView(rootView);
             //rootLinearLayout.removeAllViews();
-            rootLinearLayout.removeAllViews();
+            ViewGroup p = (ViewGroup) rootView.getParent();
+            p.removeAllViews();
             setContentView(rootView);
         }
         stateBar();
@@ -142,6 +150,7 @@ public abstract class BaseActivity extends SupportActivity implements BaseView, 
 
     /**
      * Toast 提示用户
+     *
      * @param msg 提示内容String
      */
     @Override
@@ -151,6 +160,7 @@ public abstract class BaseActivity extends SupportActivity implements BaseView, 
 
     /**
      * Toast 提示用户
+     *
      * @param msg 提示内容res目录下面的String的int值
      */
     @Override
@@ -214,4 +224,102 @@ public abstract class BaseActivity extends SupportActivity implements BaseView, 
     public void onPointerCaptureChanged(boolean hasCapture) {
 
     }
+
+
+    protected ActivityComponent getActivityComponent() {
+        return DaggerActivityComponent.builder()
+                .appComponent(MyApplication.getAppComponent())
+                .activityModule(new ActivityModule())
+                .build();
+    }
+
+    public BaseActivity setTitles(CharSequence title) {
+        tvToolbarTitle.setText(title);
+        return this;
+    }
+
+    /**
+     * 初始化toolbar的内容
+     * @param isShowToolbar 是否显示toolbar
+     * @param isShowBack 是否显示左边的TextView
+     * @param isShowMore 是否显示右边的TextView
+     * @return 当前activity对象，可以连点
+     */
+    protected BaseActivity initToolbar(boolean isShowToolbar, boolean isShowBack,
+                                       boolean isShowMore) {
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        if (null != actionBar) {
+            if (isShowToolbar) {
+                actionBar.show();
+                //tvBack = findViewById(R.id.tv_back_base_activity);
+                TextView textView = findViewById(R.id.tv_right_base_activity);
+                if (null != tvBack && null != textView) {
+                    //tvBack.setVisibility(isShowBack ? View.VISIBLE : View.INVISIBLE);
+                    textView.setVisibility(isShowMore ? View.VISIBLE : View.INVISIBLE);
+                }
+            } else {
+                actionBar.hide();
+            }
+        }
+        return this;
+    }
+
+    public BaseActivity setToolbarBack(int colorId) {
+        toolbar.setBackgroundColor(getResources().getColor(colorId));
+        return this;
+    }
+
+    @SuppressWarnings("unused")
+    public BaseActivity setMyTitle(String title) {
+        tvToolbarTitle.setText(title);
+        return this;
+    }
+
+    public BaseActivity setMyTitle(@StringRes int stringId) {
+        tvToolbarTitle.setText(stringId);
+        return this;
+    }
+
+    public void setMoreTitle(String moreTitle) {
+        tvToolbarRight.setText(moreTitle);
+    }
+
+    public BaseActivity setMoreTitle(@StringRes int stringId) {
+        tvToolbarRight.setText(stringId);
+        return this;
+    }
+
+    /**
+     * 设置左边内容.
+     *
+     * @param leftTitle 内容
+     * @return {@link BaseActivity}
+     */
+    public BaseActivity setLeftTitle(String leftTitle) {
+        if (tvBack != null) {
+            tvBack.setBackground(null);
+            tvBack.setText(leftTitle);
+        }
+        return this;
+    }
+
+    /**
+     * 设置左边内容.
+     *
+     * @param leftTitle 内容
+     */
+    public void setLeftTitle(@StringRes int leftTitle) {
+        if (tvBack != null) {
+            tvBack.setBackground(null);
+            tvBack.setText(leftTitle);
+        }
+    }
+
+    @SuppressWarnings("unused")
+    protected BaseActivity setMoreBackground(int resId) {
+        tvToolbarRight.setBackgroundResource(resId);
+        return this;
+    }
+
 }
